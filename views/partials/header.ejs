@@ -1,0 +1,15 @@
+<div class="header bg-light">
+  <div class="container d-flex justify-content-between align-items-center py-2">
+    <div>
+      <a href="/months" class="text-decoration-none"><strong>Salary App</strong></a>
+    </div>
+    <div>
+      <a href="/months" class="me-3">Months</a>
+      <a href="/employees" class="me-3">Employees</a>
+      <a href="/settings" class="me-3">Settings</a>
+      <% if (loggedIn) { %>
+        <a href="#" onclick="event.preventDefault(); fetch('/logout',{method:'POST'}).then(()=>location='/login')">Logout</a>
+      <% } %>
+    </div>
+  </div>
+</div>
