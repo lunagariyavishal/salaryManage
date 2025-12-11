@@ -5,7 +5,7 @@ const Employee = require('../models/Employee');
 const SalaryMonth = require('../models/SalaryMonth');
 const Setting = require('../models/Setting');
 const nodemailer = require("nodemailer");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const path = require('path');
 const ejs = require('ejs');
 
@@ -199,6 +199,7 @@ router.get('/slip/:id/pdf', async (req, res) => {
     // Launch Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome",
       args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
@@ -249,6 +250,7 @@ router.get("/slip/:id/email", async (req, res) => {
     // Generate PDF using Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome",
       args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
