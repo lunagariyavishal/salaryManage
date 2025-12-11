@@ -5,7 +5,7 @@ const Employee = require('../models/Employee');
 const SalaryMonth = require('../models/SalaryMonth');
 const Setting = require('../models/Setting');
 const nodemailer = require("nodemailer");
-const pdf = require('html-pdf');
+const puppeteer = require("puppeteer");
 const path = require('path');
 const ejs = require('ejs');
 
@@ -183,81 +183,116 @@ router.get('/slip/:id', async (req, res) => {
 // PDF DOWNLOAD
 // -----------------------------
 router.get('/slip/:id/pdf', async (req, res) => {
-  const salary = await Salary.findById(req.params.id).populate("employeeId");
-  const month = await SalaryMonth.findById(salary.monthId);
-  const setting = await Setting.findOne();
+  try {
+    const salary = await Salary.findById(req.params.id).populate("employeeId");
+    const month = await SalaryMonth.findById(salary.monthId);
+    const setting = await Setting.findOne();
 
-  const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
+    const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
 
-  ejs.renderFile(
-    file,
-    { salary, month, employee: salary.employeeId, setting },
-    {},
-    (err, html) => {
-      if (err) return res.status(500).send(err.toString());
+    // Render HTML
+    const html = await ejs.renderFile(
+      file,
+      { salary, month, employee: salary.employeeId, setting }
+    );
 
-      pdf.create(html, { format: "A4" }).toBuffer((err, buffer) => {
-        if (err) return res.status(500).send(err.toString());
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader(
-          "Content-Disposition",
-          `attachment; filename=salary-slip-${salary._id}.pdf`
-        );
-        res.send(buffer);
-      });
-    }
-  );
+    // Launch Puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true
+    });
+
+    await browser.close();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=salary-slip-${salary._id}.pdf`
+    );
+
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error("PDF ERROR:", err);
+    res.status(500).send("PDF generation failed: " + err.toString());
+  }
 });
+
 
 router.get("/slip/:id/email", async (req, res) => {
-  const salary = await Salary.findById(req.params.id).populate("employeeId");
-  const month = await SalaryMonth.findById(salary.monthId);
-  const setting = await Setting.findOne();
+  try {
+    const salary = await Salary.findById(req.params.id).populate("employeeId");
+    const month = await SalaryMonth.findById(salary.monthId);
+    const setting = await Setting.findOne();
 
-  if (!salary.employeeId.email) {
-    return res.send("Employee email not found.");
-  }
-
-  // Render PDF HTML
-  const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
-
-  ejs.renderFile(
-    file,
-    { salary, month, employee: salary.employeeId, setting },
-    {},
-    async (err, html) => {
-      if (err) return res.send("Template error: " + err);
-
-      pdf.create(html, { format: "A4" }).toBuffer(async (err, buffer) => {
-        if (err) return res.send("PDF error: " + err);
-
-        // Create Email Transport
-        let transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS
-          }
-        });
-
-        await transporter.sendMail({
-          from: `"${setting.title}" <${process.env.MAIL_USER}>`,
-          to: salary.employeeId.email,        // ← send to employee
-          subject: `Salary Slip - ${month.monthName} ${month.year}`,
-          text: "Please find attached your salary slip.",
-          attachments: [
-            {
-              filename: `salary-slip-${month.monthName}-${month.year}.pdf`,
-              content: buffer
-            }
-          ]
-        });
-
-        res.send("Salary slip emailed successfully!");
-      });
+    if (!salary.employeeId.email) {
+      return res.send("Employee email not found.");
     }
-  );
+
+    const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
+
+    // Render HTML
+    const html = await ejs.renderFile(
+      file,
+      { salary, month, employee: salary.employeeId, setting }
+    );
+
+    // Generate PDF using Puppeteer
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true
+    });
+
+    await browser.close();
+
+    // Email Transport
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+      }
+    });
+
+    // Send Email with PDF attached
+    await transporter.sendMail({
+      from: `"${setting.title}" <${process.env.MAIL_USER}>`,
+      to: salary.employeeId.email,
+      subject: `Salary Slip - ${month.monthName} ${month.year}`,
+      text: "Please find attached your salary slip.",
+      attachments: [
+        {
+          filename: `salary-slip-${month.monthName}-${month.year}.pdf`,
+          content: pdfBuffer
+        }
+      ]
+    });
+
+    res.send("Salary slip emailed successfully!");
+
+  } catch (err) {
+    console.error("EMAIL SLIP ERROR:", err);
+    res.status(500).send("Email sending failed: " + err.toString());
+  }
 });
+
 
 
 module.exports = router;
