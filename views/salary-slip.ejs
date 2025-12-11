@@ -14,7 +14,7 @@
     <h5 class="mt-2">Pay Slip for <%= month.monthName %> - <%= String(month.year).slice(-2) %></h5>
 
     <table class="table">
-      <tr><td>Employee Name</td><td><%= employee.name %></td><td>Paid Days</td><td><%= salary.paidDays %></td></tr>
+      <tr><td>Employee Name</td><td><%= employee.name %></td><td>Paid Days</td><td><%= month.workingDays-salary.leaveDays %></td></tr>
       <tr><td>Designation</td><td><%= employee.designation %></td><td>Leaves</td><td><%= salary.leaveDays %></td></tr>
       <tr><td>Department</td><td><%= employee.department %></td><td>Deductions</td><td>Rs. <%= salary.totalDeductions %></td></tr>
       <tr><td>Total Working Day</td><td><%= month.workingDays %></td><td>Advance</td><td>Rs. <%= salary.advance %></td></tr>
