@@ -1,36 +1,45 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Setting = require('../models/Setting');
+const multer = require("multer");
+const Setting = require("../models/Setting");
+const path = require("path");
 
-// Load settings page
-router.get('/', async (req, res) => {
-  let setting = await Setting.findOne();
-
-  // Create default record if missing
-  if (!setting) {
-    setting = await Setting.create({
-      title: "My Company",
-      address: "Company Address Here"
-    });
+// STORAGE CONFIG
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, "public/uploads/signatures");
+  },
+  filename: function(req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, "signature" + Date.now() + ext);
   }
+});
+const upload = multer({ storage });
 
-  res.render('settings', { setting });
+// ---------------- VIEW SETTINGS PAGE ----------------
+router.get("/", async (req, res) => {
+  let setting = await Setting.findOne();
+  res.render("settings", { setting });
 });
 
-// Update settings
-router.post('/', async (req, res) => {
-  const { title, address } = req.body;
+// ---------------- UPDATE SETTINGS ----------------
+router.post("/", upload.single("signature"), async (req, res) => {
   let setting = await Setting.findOne();
 
   if (!setting) {
-    await Setting.create({ title, address });
-  } else {
-    setting.title = title;
-    setting.address = address;
-    await setting.save();
+    setting = new Setting();
   }
 
-  res.redirect('/settings');
+  setting.title = req.body.title;
+  setting.address = req.body.address;
+  setting.email = req.body.email;
+
+  if (req.file) {
+    setting.signaturePath = "/uploads/signatures/" + req.file.filename;
+  }
+
+  await setting.save();
+  res.redirect("/settings");
 });
 
 module.exports = router;
