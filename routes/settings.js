@@ -4,38 +4,50 @@ const multer = require("multer");
 const Setting = require("../models/Setting");
 const path = require("path");
 
-// STORAGE CONFIG
+// MULTER STORAGE FOR BOTH FILES
 const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, "public/uploads/signatures");
+  destination: function (req, file, cb) {
+    if (file.fieldname === "signature") {
+      cb(null, "public/uploads/signatures");
+    } else if (file.fieldname === "logo") {
+      cb(null, "public/uploads/logos");
+    }
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    cb(null, "signature" + Date.now() + ext);
+    cb(null, file.fieldname + "-" + Date.now() + ext);
   }
 });
+
 const upload = multer({ storage });
 
-// ---------------- VIEW SETTINGS PAGE ----------------
+// ---------------- SETTINGS PAGE ----------------
 router.get("/", async (req, res) => {
-  let setting = await Setting.findOne();
+  const setting = await Setting.findOne();
   res.render("settings", { setting });
 });
 
-// ---------------- UPDATE SETTINGS ----------------
-router.post("/", upload.single("signature"), async (req, res) => {
-  let setting = await Setting.findOne();
+// ---------------- SAVE SETTINGS ----------------
+router.post("/", upload.fields([
+  { name: "signature", maxCount: 1 },
+  { name: "logo", maxCount: 1 }
+]), async (req, res) => {
 
-  if (!setting) {
-    setting = new Setting();
-  }
+  let setting = await Setting.findOne();
+  if (!setting) setting = new Setting();
 
   setting.title = req.body.title;
   setting.address = req.body.address;
   setting.email = req.body.email;
 
-  if (req.file) {
-    setting.signaturePath = "/uploads/signatures/" + req.file.filename;
+  if (req.files.signature) {
+    setting.signaturePath =
+      "/uploads/signatures/" + req.files.signature[0].filename;
+  }
+
+  if (req.files.logo) {
+    setting.logoPath =
+      "/uploads/logos/" + req.files.logo[0].filename;
   }
 
   await setting.save();

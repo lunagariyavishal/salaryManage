@@ -170,13 +170,9 @@ router.get('/slip/:id', async (req, res) => {
   const salary = await Salary.findById(req.params.id).populate("employeeId");
   const month = await SalaryMonth.findById(salary.monthId);
   const setting = await Setting.findOne();
+  const baseUrl = req.protocol + "://" + req.get("host");
 
-  res.render("salary-slip", {
-    salary,
-    month,
-    employee: salary.employeeId,
-    setting,
-  });
+  res.render("salary-slip-pdf", { salary, month, employee: salary.employeeId, setting, baseUrl });
 });
 
 // -----------------------------
@@ -187,13 +183,13 @@ router.get('/slip/:id/pdf', async (req, res) => {
     const salary = await Salary.findById(req.params.id).populate("employeeId");
     const month = await SalaryMonth.findById(salary.monthId);
     const setting = await Setting.findOne();
-
+    const baseUrl = req.protocol + "://" + req.get("host");
     const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
 
     // Render HTML
     const html = await ejs.renderFile(
       file,
-      { salary, month, employee: salary.employeeId, setting }
+      { salary, month, employee: salary.employeeId, setting, baseUrl }
     );
 
     // Launch Puppeteer
@@ -238,13 +234,13 @@ router.get("/slip/:id/email", async (req, res) => {
     if (!salary.employeeId.email) {
       return res.send("Employee email not found.");
     }
-
+    const baseUrl = req.protocol + "://" + req.get("host");
     const file = path.join(__dirname, "..", "views", "salary-slip-pdf.ejs");
 
     // Render HTML
     const html = await ejs.renderFile(
       file,
-      { salary, month, employee: salary.employeeId, setting }
+      { salary, month, employee: salary.employeeId, setting, baseUrl }
     );
 
     // Generate PDF using Puppeteer

@@ -15,27 +15,35 @@
     <form method="POST" enctype="multipart/form-data" class="row g-3">
 
       <div class="col-md-6">
-        <label class="form-label">Company Title</label>
-        <input name="title" class="form-control" value="<%= setting?.title || '' %>">
+        <label class="form-label">Company Name</label>
+        <input name="title" class="form-control"
+          value="<%= setting?.title || '' %>">
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Employer Email</label>
-        <input name="email" type="email" class="form-control" value="<%= setting?.email || '' %>">
+        <label class="form-label">Company Email</label>
+        <input name="email" type="email" class="form-control"
+          value="<%= setting?.email || '' %>">
       </div>
 
       <div class="col-md-12">
-        <label class="form-label">Address</label>
-        <textarea name="address" class="form-control" rows="2"><%= setting?.address || '' %></textarea>
+        <label class="form-label">Company Address</label>
+        <textarea name="address" rows="2" class="form-control"><%= setting?.address || '' %></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Company Logo</label>
+        <input type="file" name="logo" class="form-control">
+        <% if (setting?.logoPath) { %>
+          <img src="<%= setting.logoPath %>" style="height:70px;margin-top:10px;">
+        <% } %>
       </div>
 
       <div class="col-md-6">
         <label class="form-label">Employer Signature</label>
         <input type="file" name="signature" class="form-control">
         <% if (setting?.signaturePath) { %>
-          <div class="mt-2">
-            <img src="<%= setting.signaturePath %>" style="height:70px;">
-          </div>
+          <img src="<%= setting.signaturePath %>" style="height:70px;margin-top:10px;">
         <% } %>
       </div>
 
@@ -44,7 +52,7 @@
       </div>
 
     </form>
-  </div>
 
+  </div>
 </body>
 </html>

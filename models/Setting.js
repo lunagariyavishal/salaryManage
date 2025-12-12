@@ -6,5 +6,7 @@ module.exports = mongoose.model(
     title: String,   // Company name
     address: String,  // Printed in slip
     signaturePath: String,
+    email: String,
+    logoPath: String
   })
 );
