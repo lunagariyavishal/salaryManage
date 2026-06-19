@@ -24,7 +24,7 @@ router.post('/create', async (req, res) => {
   const monthISO = `${year}-${month}`;
   const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
 
-  const totalWorkingHours = Number(workingDays) * 8;
+  const totalWorkingHours = Number(workingDays) * 8.5;
 
   await SalaryMonth.create({
     monthISO,
