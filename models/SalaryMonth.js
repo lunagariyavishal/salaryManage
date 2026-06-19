@@ -9,7 +9,8 @@ module.exports = mongoose.model(
 
     totalDays: Number,                            // 31
     workingDays: Number,                          // 25
-    totalWorkingHours: Number,                    // workingDays × 8
+    workingHoursPerDay: { type: Number, default: 8.5 }, // 8 / 8.5 / 9 / 9.5
+    totalWorkingHours: Number,                    // workingDays × workingHoursPerDay
 
     createdAt: { type: Date, default: Date.now }
   })

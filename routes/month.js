@@ -15,7 +15,7 @@ router.get('/create', (req, res) => {
 
 // Save month
 router.post('/create', async (req, res) => {
-  const { month, year, totalDays, workingDays } = req.body;
+  const { month, year, totalDays, workingDays, workingHoursPerDay } = req.body;
 
   if (!month || !year) {
     return res.send("Please select both month and year.");
@@ -24,7 +24,8 @@ router.post('/create', async (req, res) => {
   const monthISO = `${year}-${month}`;
   const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
 
-  const totalWorkingHours = Number(workingDays) * 8.5;
+  const hpd = Number(workingHoursPerDay) || 8.5;
+  const totalWorkingHours = Number(workingDays) * hpd;
 
   await SalaryMonth.create({
     monthISO,
@@ -32,6 +33,7 @@ router.post('/create', async (req, res) => {
     year: Number(year),
     totalDays: Number(totalDays),
     workingDays: Number(workingDays),
+    workingHoursPerDay: hpd,
     totalWorkingHours,
   });
 

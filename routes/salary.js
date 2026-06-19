@@ -29,11 +29,12 @@ router.post('/create/:monthId', async (req, res) => {
   const workingHours = Number(req.body.workingHours || 0); // employee actual hours
 
   // Total required hours in month
-  const totalWorkingHours = month.workingDays * 8.5;
+  const hpd = month.workingHoursPerDay || 8.5;
+  const totalWorkingHours = month.workingDays * hpd;
 
   // Hour-based leave
   const absentHours = Math.max(0, totalWorkingHours - workingHours);
-  const leaveDays = absentHours / 8.5;
+  const leaveDays = absentHours / hpd;
 
   // Earnings
   const otHours = Number(req.body.otHours || 0);
@@ -110,10 +111,11 @@ router.post('/edit/:id', async (req, res) => {
   const workingHours = Number(req.body.workingHours || 0);
 
   // Required hours
-  const requiredHours = month.workingDays * 8.5;
+  const hpd = month.workingHoursPerDay || 8.5;
+  const requiredHours = month.workingDays * hpd;
 
   const absentHours = Math.max(0, requiredHours - workingHours);
-  const leaveDays = absentHours / 8.5;
+  const leaveDays = absentHours / hpd;
 
   const perDaySalary = monthlySalary / month.totalDays;
   const leaveDeduction = perDaySalary * leaveDays;

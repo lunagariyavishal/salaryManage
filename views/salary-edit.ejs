@@ -26,7 +26,7 @@
         <label class="form-label">Actual Working Hours</label>
         <input name="workingHours" id="workingHours" class="form-control"
                value="<%= salary.workingHours %>" type="number">
-        <small class="text-muted">Required: <%= month.workingDays * 8 %> hrs</small>
+        <small class="text-muted">Required: <%= month.workingDays * (month.workingHoursPerDay || 8.5) %> hrs</small>
       </div>
 
       <!-- OT -->
@@ -91,12 +91,12 @@ function recalc(){
   const monthly = toNum(document.getElementById('monthlySalary').value);
   const workingHours = toNum(document.getElementById('workingHours').value);
 
-  const requiredHours = <%= month.workingDays %> * 8;
+  const requiredHours = <%= month.workingDays %> * <%= month.workingHoursPerDay || 8.5 %>;
   const totalDays = <%= month.totalDays %>;
 
   // Hour → Leave Calculation
   const absentHours = Math.max(0, requiredHours - workingHours);
-  const leaveDays = absentHours / 8;
+  const leaveDays = absentHours / <%= month.workingHoursPerDay || 8.5 %>;
 
   const perDaySalary = totalDays > 0 ? monthly / totalDays : 0;
   const leaveDeduction = perDaySalary * leaveDays;

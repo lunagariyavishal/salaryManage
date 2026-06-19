@@ -46,11 +46,20 @@
       </div>
 
       <div class="col-md-2">
+        <select name="workingHoursPerDay" class="form-select" required>
+          <option value="8">8 hrs/day</option>
+          <option value="8.5" selected>8.5 hrs/day</option>
+          <option value="9">9 hrs/day</option>
+          <option value="9.5">9.5 hrs/day</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
         <button class="btn btn-success w-100">Create</button>
       </div>
     </form>
 
-    <p class="small mt-2">Select month using calendar. Total working hours = workingDays × 8.5 (auto-calculated on server).</p>
+    <p class="small mt-2">Total working hours = Working Days × Hours/Day (auto-calculated on save).</p>
   </div>
 </body>
 </html>

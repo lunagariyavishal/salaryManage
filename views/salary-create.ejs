@@ -97,12 +97,12 @@ function recalc(){
   const monthly = toNum(document.getElementById('monthlySalary').value);
   const workingHours = toNum(document.getElementById('workingHours').value);
 
-  const requiredHours = <%= month.workingDays %> * 8;
+  const requiredHours = <%= month.workingDays %> * <%= month.workingHoursPerDay || 8.5 %>;
   const totalDays = <%= month.totalDays %>;
 
   // Hour → Leave Calculation
   const absentHours = Math.max(0, requiredHours - workingHours);
-  const leaveDays = absentHours / 8;
+  const leaveDays = absentHours / <%= month.workingHoursPerDay || 8.5 %>;
 
   const perDay = monthly / totalDays;
   const leaveDeduction = perDay * leaveDays;
